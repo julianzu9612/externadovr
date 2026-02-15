@@ -124,7 +124,7 @@
     <!-- Escena AR -->
     <!-- uiLoading:yes (default) pero oculto con CSS, evita crash en Safari -->
     <a-scene
-        mindar-image="imageTargetSrc: ./assets/targets/rector2.mind; autoStart: false; filterMinCF:0.0001; filterBeta: 0.001;"
+        mindar-image="imageTargetSrc: ./assets/targets/rector2.mind; autoStart: false; uiLoading: yes; uiScanning: no; filterMinCF:0.0001; filterBeta: 0.001;"
         color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false">
 
@@ -253,6 +253,31 @@
             // debugConsole.style.display = 'block';
             // debugConsole.innerHTML += "<div>" + msg + "</div>";
         }
+
+        // --- FIX RACE CONDITION START ---
+        // Deshabilitar botón al inicio
+        playButton.disabled = true;
+        playButton.innerText = "CARGANDO MOTOR...";
+        playButton.style.opacity = "0.5";
+        playButton.style.cursor = "not-allowed";
+
+        // Habilitar solo cuando la escena esté cargada
+        sceneEl.addEventListener('loaded', () => {
+            logMsg("Scene Loaded! Enabling Start Button.");
+            playButton.disabled = false;
+            playButton.innerText = "INICIAR EXPERIENCIA";
+            playButton.style.opacity = "1";
+            playButton.style.cursor = "pointer";
+        });
+        // Fallback por si 'loaded' ya ocurrió
+        if (sceneEl.hasLoaded) {
+            logMsg("Scene already loaded.");
+            playButton.disabled = false;
+            playButton.innerText = "INICIAR EXPERIENCIA";
+            playButton.style.opacity = "1";
+            playButton.style.cursor = "pointer";
+        }
+        // --- FIX RACE CONDITION END ---
 
         playButton.addEventListener('click', async () => {
             playButton.innerText = "CARGANDO...";
