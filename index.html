@@ -124,7 +124,7 @@
     <!-- Escena AR -->
     <!-- uiLoading:yes (default) pero oculto con CSS, evita crash en Safari -->
     <a-scene
-        mindar-image="imageTargetSrc: ./assets/targets/targets.mind; autoStart: false; filterMinCF:0.0001; filterBeta: 0.001;"
+        mindar-image="imageTargetSrc: ./assets/targets/rector2.mind; autoStart: false; filterMinCF:0.0001; filterBeta: 0.001;"
         color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false">
 
@@ -145,52 +145,81 @@
         </a-camera>
 
         <!-- ================================================================== -->
-        <!-- RECTOR 1: DIEGO MENDOZA PÉREZ (Target 0) -->
+        <!-- RECTOR 2: RICARDO HINESTROZA (TARGET 0 - Testing rector2.mind) -->
         <!-- ================================================================== -->
-        <a-entity mindar-image-target="targetIndex: 0" id="target-rector-1">
+        <a-entity mindar-image-target="targetIndex: 0" id="target-rector-2">
 
-            <!-- Video Base (Bandera) -->
-            <a-video id="ar-video-1" src="#video-rector-1" width="1" height="1.2" position="0 0 0"></a-video>
+            <!-- Video Principal (El Constructor - Casa Propia) -->
+            <a-video id="ar-video-2" src="#video-rector-2" width="1" height="1" position="0 0 0"></a-video>
 
-            <!-- ANILLO ORBITAL INTERACTIVO -->
-            <!-- Contenedor que gira constantemente -->
-            <a-entity animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear">
-                <a-torus radius="0.8" radius-tubular="0.01" color="#FFD700" opacity="0.8" rotation="90 0 0"></a-torus>
+            <!-- LÍNEA DE TIEMPO INTERACTIVA (Concepto "Consolidación") -->
+            <a-entity position="0 -0.6 0.1" scale="0.8 0.8 0.8">
 
-                <!-- NODO 1: EL PACTO (Azul) -->
-                <a-sphere class="clickable" color="#00FFFF" radius="0.1" position="0.8 0 0"
-                    event-set__click="_event: click; scale: 1.2 1.2 1.2" data-type="pacto">
-                </a-sphere>
+                <!-- Barra Dorada Base -->
+                <a-box color="#FFD700" width="1.8" height="0.05" depth="0.05" position="0 0 0"
+                    material="metalness: 0.8; roughness: 0.2"></a-box>
 
-                <!-- NODO 2: DIPLOMACIA (Rojo) -->
-                <a-sphere class="clickable" color="#FF4444" radius="0.1" position="-0.4 0 0.7" data-type="diplomacia">
-                </a-sphere>
+                <!-- NODO 1: 1933 EL RECTORADO (Izquierda) -->
+                <a-entity position="-0.7 0.1 0">
+                    <a-sphere class="clickable" color="#000088" radius="0.12"
+                        event-set__click="_event: click; scale: 1.2 1.2 1.2"
+                        animation="property: position; to: -0.7 0.15 0; dir: alternate; loop: true; dur: 2000"
+                        data-type="rectorado">
+                    </a-sphere>
+                    <a-text value="1933" align="center" position="0 -0.2 0" width="2" color="white"></a-text>
+                </a-entity>
 
-                <!-- NODO 3: LEGADO (Verde) -->
-                <a-sphere class="clickable" color="#44FF44" radius="0.1" position="-0.4 0 -0.7" data-type="legado">
-                </a-sphere>
+                <!-- NODO 2: 1942 CASA PROPIA (Centro - Hito Principal) -->
+                <a-entity position="0 0.1 0">
+                    <a-box class="clickable" color="#FF4444" width="0.25" height="0.25" depth="0.25"
+                        animation="property: rotation; to: 0 360 0; loop: true; dur: 10000" data-type="casa">
+                    </a-box>
+                    <a-text value="1942" align="center" position="0 -0.25 0" width="2.5" color="#FFD700"
+                        font="exo2bold"></a-text>
+                </a-entity>
+
+                <!-- NODO 3: 1963 EL JURISTA (Derecha) -->
+                <a-entity position="0.7 0.1 0">
+                    <a-sphere class="clickable" color="#008800" radius="0.12"
+                        animation="property: position; to: 0.7 0.05 0; dir: alternate; loop: true; dur: 2500"
+                        data-type="jurista">
+                    </a-sphere>
+                    <a-text value="1963" align="center" position="0 -0.2 0" width="2" color="white"></a-text>
+                </a-entity>
             </a-entity>
 
-            <!-- PANELES DE INFORMACIÓN (Ocultos por defecto) -->
-            <a-entity id="info-panel-pacto" visible="false" position="1.2 0 0">
-                <a-plane width="1.2" height="1.5" color="#000" opacity="0.8">
+            <!-- MODELO 3D (Optimizado - 2.1MB) -->
+            <!-- Posicionado a la derecha de la línea de tiempo -->
+            <a-entity gltf-model="./assets/models/rector2_opt.glb" scale="0.5 0.5 0.5" position="1.2 -0.4 0.2"
+                rotation="0 -30 0" animation="property: rotation; to: 0 330 0; loop: true; dur: 15000; easing: linear">
+            </a-entity>
+
+            <!-- PANELES DE INFORMACIÓN (Estilo Pergamino/Documento) -->
+
+            <!-- 1. El Rectorado -->
+            <a-entity id="info-panel-rectorado" visible="false" position="-1.2 0 0.2">
+                <a-plane width="1.2" height="1.5" color="#111" opacity="0.9" material="shader: flat">
                     <a-text
-                        value="EL PACTO DE HONOR (1923)\n\nAnte la quiebra inminente, estudiantes y profesores salvaron la universidad pagando y enseñando gratis."
+                        value="EL GRAN RECTOR (1933-1963)\n\n30 años defendiendo la libertad de cátedra y la democracia frente a regímenes autoritarios."
                         align="center" width="1" color="white" wrap-count="20"></a-text>
                 </a-plane>
             </a-entity>
 
-            <a-entity id="info-panel-diplomacia" visible="false" position="-1.2 0 0">
-                <a-plane width="1.2" height="1.5" color="#300" opacity="0.8">
+            <!-- 2. Casa Propia (Hito Central) -->
+            <a-entity id="info-panel-casa" visible="false" position="0 0.8 0.3">
+                <a-plane width="1.4" height="0.8" color="#300" opacity="0.95" border="color: gold; width: 0.05">
                     <a-text
-                        value="EL REBELDE DIPLOMÁTICO\n\nSe opuso a la entrega de soberanía tras la pérdida de Panamá. Fue exiliado por defender sus ideales."
-                        align="center" width="1" color="white" wrap-count="20"></a-text>
+                        value="LA CASA PROPIA\n\n'El Externado tiene casa propia, la criatura no morirá'. La consolidación física en el barrio Santafé."
+                        align="center" width="1.3" color="#FFD700" wrap-count="25"></a-text>
                 </a-plane>
             </a-entity>
 
-            <a-entity id="info-panel-legado" visible="false" position="0 1.2 0">
-                <a-plane width="1.2" height="0.6" color="#030" opacity="0.8">
-                    <a-text value="SOCIOLOGÍA Y CIENCIA" align="center" width="1.5" color="white"></a-text>
+            <!-- 3. El Jurista -->
+            <a-entity id="info-panel-jurista" visible="false" position="1.2 0 0.2">
+                <a-plane width="1.2" height="1.5" color="#030" opacity="0.9">
+                    <a-text
+                        value="EL JURISTA MODERNO\n\nPresidente de la Corte Suprema (1936). Modernizó el derecho civil y formó a generaciones de líderes."
+                        align="center" width="1" color="white" wrap-count="20"></a-text>
                 </a-plane>
             </a-entity>
 
@@ -233,16 +262,11 @@
                 // 1. "Calentar" videos: reproducir y pausar inmediatamente
                 // Esto fuerza al navegador móvil a cargar el buffer inicial
                 logMsg("Warming up videos...");
-                video1.muted = true;
                 video2.muted = true;
-                await video1.play();
-                video1.pause();
-                video1.currentTime = 0;
                 await video2.play();
                 video2.pause();
                 video2.currentTime = 0;
                 // Dejar muted=false para que suenen cuando se detecte el target (si es deseado, o mantener true si autoplay policy molesta)
-                video1.muted = false;
                 video2.muted = false;
 
                 // 2. Iniciar MindAR
@@ -259,31 +283,26 @@
         });
 
         // Lógica de detección básica
-        const target1 = document.querySelector('#target-rector-1');
-        target1.addEventListener("targetFound", () => { logMsg("Rector 1 Found"); video1.play(); });
-        target1.addEventListener("targetLost", () => { logMsg("Rector 1 Lost"); video1.pause(); });
+        const target2 = document.querySelector('#target-rector-2');
+        target2.addEventListener("targetFound", () => { logMsg("Rector 2 Found (Target 0)"); video2.play(); });
+        target2.addEventListener("targetLost", () => { logMsg("Rector 2 Lost (Target 0)"); video2.pause(); });
 
-        const target2 = document.querySelector('[mindar-image-target="targetIndex: 1"]');
-        target2.addEventListener("targetFound", () => { logMsg("Rector 2 Found"); video2.play(); });
-        target2.addEventListener("targetLost", () => { logMsg("Rector 2 Lost"); video2.pause(); });
-
-        // LÓGICA DE INTERACCIÓN (PANEL INFORMATIVO)
+        // LÓGICA DE INTERACCIÓN (Timeline)
         function showInfo(type) {
-            // 1. Ocultar todos primero
-            const panels = ['pacto', 'diplomacia', 'legado'];
+            // Ocultar todos
+            const panels = ['rectorado', 'casa', 'jurista'];
             panels.forEach(p => {
                 const el = document.getElementById('info-panel-' + p);
                 if (el) el.setAttribute('visible', false);
             });
 
-            // 2. Mostrar el seleccionado
+            // Mostrar seleccionado
             const selectedPanel = document.getElementById('info-panel-' + type);
             if (selectedPanel) {
                 selectedPanel.setAttribute('visible', true);
-
-                // Animación "Pop"
-                selectedPanel.object3D.scale.set(0.1, 0.1, 0.1);
-                selectedPanel.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 500; easing: easeOutElastic');
+                // Animación de despliegue
+                selectedPanel.object3D.scale.set(1, 0, 1);
+                selectedPanel.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 400; easing: easeOutQuad');
             }
         }
 
