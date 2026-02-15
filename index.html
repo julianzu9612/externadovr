@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Externado VR - Experiencia de Museo AR</title>
+
+    <!-- A-Frame y MindAR -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* UI de Carga y Escaneo */
+        #ui-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+
+        #ui-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .scan-guide {
+            width: 250px;
+            height: 250px;
+            border: 4px solid #fff;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: #00ffcc;
+            bottom: 0;
+            animation: scan 2s infinite ease-in-out;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0;
+            }
+
+            50% {
+                top: 100%;
+            }
+
+            100% {
+                top: 0;
+            }
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        p {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        /* Botón para activar audio (necesario por políticas de navegador) */
+        #play-button {
+            padding: 15px 30px;
+            background: #00ffcc;
+            color: black;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="ui-container">
+        <div class="scan-guide">
+            <div class="scan-line"></div>
+        </div>
+        <h1>Experiencia AR: Rectores</h1>
+        <p>Apunta al Rector Diego Mendoza para interactuar</p>
+        <button id="play-button">INICIAR EXPERIENCIA</button>
+    </div>
+
+    <!-- Escena AR -->
+    <a-scene
+        mindar-image="imageTargetSrc: ./assets/targets/targets.mind; autoStart: false; uiLoading: no; uiScanning: no;"
+        color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false">
+
+        <a-assets>
+            <video id="video-rector-1" src="./assets/videos/rector1.mp4" preload="auto" loop="true"
+                crossOrigin="anonymous"></video>
+            <video id="video-rector-2" src="./assets/videos/rector2.mp4" preload="auto" loop="true"
+                crossOrigin="anonymous"></video>
+        </a-assets>
+
+        <!-- Cámara con Cursor (Raycaster) -->
+        <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;"
+            raycaster="far: 10000; objects: .clickable">
+            <!-- Cursor Visual (Punto central para saber dónde tocas) -->
+            <a-entity cursor="fuse: true; fuseTimeout: 500" position="0 0 -1"
+                geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03" material="color: white; shader: flat">
+            </a-entity>
+        </a-camera>
+
+        <!-- ================================================================== -->
+        <!-- RECTOR 1: DIEGO MENDOZA PÉREZ (Target 0) -->
+        <!-- ================================================================== -->
+        <a-entity mindar-image-target="targetIndex: 0" id="target-rector-1">
+
+            <!-- Video Base (Bandera) -->
+            <a-video id="ar-video-1" src="#video-rector-1" width="1" height="1.2" position="0 0 0"></a-video>
+
+            <!-- ANILLO ORBITAL INTERACTIVO -->
+            <!-- Contenedor que gira constantemente -->
+            <a-entity animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear">
+                <a-torus radius="0.8" radius-tubular="0.01" color="#FFD700" opacity="0.8" rotation="90 0 0"></a-torus>
+
+                <!-- NODO 1: EL PACTO (Azul) -->
+                <a-sphere class="clickable" color="#00FFFF" radius="0.1" position="0.8 0 0"
+                    event-set__click="_event: click; scale: 1.2 1.2 1.2" data-type="pacto">
+                </a-sphere>
+
+                <!-- NODO 2: DIPLOMACIA (Rojo) -->
+                <a-sphere class="clickable" color="#FF4444" radius="0.1" position="-0.4 0 0.7" data-type="diplomacia">
+                </a-sphere>
+
+                <!-- NODO 3: LEGADO (Verde) -->
+                <a-sphere class="clickable" color="#44FF44" radius="0.1" position="-0.4 0 -0.7" data-type="legado">
+                </a-sphere>
+            </a-entity>
+
+            <!-- PANELES DE INFORMACIÓN (Ocultos por defecto) -->
+            <a-entity id="info-panel-pacto" visible="false" position="1.2 0 0">
+                <a-plane width="1.2" height="1.5" color="#000" opacity="0.8">
+                    <a-text
+                        value="EL PACTO DE HONOR (1923)\n\nAnte la quiebra inminente, estudiantes y profesores salvaron la universidad pagando y enseñando gratis."
+                        align="center" width="1" color="white" wrap-count="20"></a-text>
+                </a-plane>
+            </a-entity>
+
+            <a-entity id="info-panel-diplomacia" visible="false" position="-1.2 0 0">
+                <a-plane width="1.2" height="1.5" color="#300" opacity="0.8">
+                    <a-text
+                        value="EL REBELDE DIPLOMÁTICO\n\nSe opuso a la entrega de soberanía tras la pérdida de Panamá. Fue exiliado por defender sus ideales."
+                        align="center" width="1" color="white" wrap-count="20"></a-text>
+                </a-plane>
+            </a-entity>
+
+            <a-entity id="info-panel-legado" visible="false" position="0 1.2 0">
+                <a-plane width="1.2" height="0.6" color="#030" opacity="0.8">
+                    <a-text value="SOCIOLOGÍA Y CIENCIA" align="center" width="1.5" color="white"></a-text>
+                </a-plane>
+            </a-entity>
+
+        </a-entity>
+
+        <!-- ================================================================== -->
+        <!-- RECTOR 2 (Target 1) -->
+        <!-- ================================================================== -->
+        <a-entity mindar-image-target="targetIndex: 1">
+            <a-video id="ar-video-2" src="#video-rector-2" position="0 0 0" width="1" height="1.4"
+                rotation="0 0 0"></a-video>
+            <a-entity position="0 -0.9 0.1">
+                <a-text value="EL GRAN CONSOLIDADOR" align="center" width="2" color="#ffffff"></a-text>
+            </a-entity>
+        </a-entity>
+
+    </a-scene>
+
+    <script>
+        const uiContainer = document.getElementById('ui-container');
+        const playButton = document.getElementById('play-button');
+        const sceneEl = document.querySelector('a-scene');
+        const video1 = document.querySelector('#video-rector-1');
+        const video2 = document.querySelector('#video-rector-2');
+
+        playButton.addEventListener('click', () => {
+            uiContainer.classList.add('hidden');
+            sceneEl.systems["mindar-image-system"].start();
+        });
+
+        // Lógica de detección básica
+        const target1 = document.querySelector('#target-rector-1');
+        target1.addEventListener("targetFound", () => { video1.play(); });
+        target1.addEventListener("targetLost", () => { video1.pause(); });
+
+        const target2 = document.querySelector('[mindar-image-target="targetIndex: 1"]');
+        target2.addEventListener("targetFound", () => { video2.play(); });
+        target2.addEventListener("targetLost", () => { video2.pause(); });
+
+        // LÓGICA DE INTERACCIÓN (PANEL INFORMATIVO)
+        function showInfo(type) {
+            // 1. Ocultar todos primero
+            const panels = ['pacto', 'diplomacia', 'legado'];
+            panels.forEach(p => {
+                const el = document.getElementById('info-panel-' + p);
+                if (el) el.setAttribute('visible', false);
+            });
+
+            // 2. Mostrar el seleccionado
+            const selectedPanel = document.getElementById('info-panel-' + type);
+            if (selectedPanel) {
+                selectedPanel.setAttribute('visible', true);
+
+                // Animación "Pop"
+                selectedPanel.object3D.scale.set(0.1, 0.1, 0.1);
+                selectedPanel.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 500; easing: easeOutElastic');
+            }
+        }
+
+        // Agregar Event Listeners a las esferas (Clickable)
+        document.querySelectorAll('.clickable').forEach(el => {
+            el.addEventListener('click', () => {
+                const type = el.getAttribute('data-type');
+                if (type) showInfo(type);
+            });
+        });
+    </script>
+</body>
+
+</html>
