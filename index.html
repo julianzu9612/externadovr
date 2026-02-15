@@ -8,13 +8,20 @@
 
     <!-- A-Frame y MindAR -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <link rel="preload" as="video" href="./assets/videos/rector1.mp4">
+    <link rel="preload" as="video" href="./assets/videos/rector2.mp4">
 
     <style>
         body {
             margin: 0;
             overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Ocultar UI de carga nativa de MindAR para personalizarla */
+        .mindar-ui-loading {
+            display: none !important;
         }
 
         /* UI de Carga y Escaneo */
@@ -28,7 +35,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.9);
             color: white;
             z-index: 1000;
             transition: opacity 0.5s;
@@ -76,11 +83,13 @@
             font-size: 1.5rem;
             text-transform: uppercase;
             letter-spacing: 2px;
+            text-align: center;
         }
 
         p {
             font-size: 1rem;
             opacity: 0.8;
+            text-align: center;
         }
 
         /* Botón para activar audio (necesario por políticas de navegador) */
@@ -93,6 +102,7 @@
             font-weight: bold;
             cursor: pointer;
             margin-top: 20px;
+            font-size: 1rem;
         }
     </style>
 </head>
@@ -106,19 +116,23 @@
         <h1>Experiencia AR: Rectores</h1>
         <p>Apunta al Rector Diego Mendoza para interactuar</p>
         <button id="play-button">INICIAR EXPERIENCIA</button>
+        <div id="debug-console"
+            style="position:fixed; bottom:0; left:0; width:100%; height:100px; background:rgba(0,0,0,0.5); color:lime; font-size:10px; overflow-y:scroll; pointer-events:none; z-index:9999; display:none;">
+        </div>
     </div>
 
     <!-- Escena AR -->
+    <!-- uiLoading:yes (default) pero oculto con CSS, evita crash en Safari -->
     <a-scene
-        mindar-image="imageTargetSrc: ./assets/targets/targets.mind; autoStart: false; uiLoading: no; uiScanning: no;"
+        mindar-image="imageTargetSrc: ./assets/targets/targets.mind; autoStart: false; filterMinCF:0.0001; filterBeta: 0.001;"
         color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false">
 
         <a-assets>
             <video id="video-rector-1" src="./assets/videos/rector1.mp4" preload="auto" loop="true"
-                crossOrigin="anonymous"></video>
+                crossOrigin="anonymous" playsinline webkit-playsinline></video>
             <video id="video-rector-2" src="./assets/videos/rector2.mp4" preload="auto" loop="true"
-                crossOrigin="anonymous"></video>
+                crossOrigin="anonymous" playsinline webkit-playsinline></video>
         </a-assets>
 
         <!-- Cámara con Cursor (Raycaster) -->
@@ -201,20 +215,57 @@
         const sceneEl = document.querySelector('a-scene');
         const video1 = document.querySelector('#video-rector-1');
         const video2 = document.querySelector('#video-rector-2');
+        const debugConsole = document.getElementById('debug-console');
 
-        playButton.addEventListener('click', () => {
-            uiContainer.classList.add('hidden');
-            sceneEl.systems["mindar-image-system"].start();
+        // Función para logging en pantalla (Debug Mode)
+        function logMsg(msg) {
+            console.log(msg);
+            // Descomentar para ver logs en pantalla del celular
+            // debugConsole.style.display = 'block';
+            // debugConsole.innerHTML += "<div>" + msg + "</div>";
+        }
+
+        playButton.addEventListener('click', async () => {
+            playButton.innerText = "CARGANDO...";
+            uiContainer.style.background = "rgba(0,0,0,0.95)"; // Oscurecer más mientras carga
+
+            try {
+                // 1. "Calentar" videos: reproducir y pausar inmediatamente
+                // Esto fuerza al navegador móvil a cargar el buffer inicial
+                logMsg("Warming up videos...");
+                video1.muted = true;
+                video2.muted = true;
+                await video1.play();
+                video1.pause();
+                video1.currentTime = 0;
+                await video2.play();
+                video2.pause();
+                video2.currentTime = 0;
+                // Dejar muted=false para que suenen cuando se detecte el target (si es deseado, o mantener true si autoplay policy molesta)
+                video1.muted = false;
+                video2.muted = false;
+
+                // 2. Iniciar MindAR
+                logMsg("Starting MindAR...");
+                await sceneEl.systems["mindar-image-system"].start();
+
+                uiContainer.classList.add('hidden');
+                logMsg("MindAR Ready!");
+            } catch (error) {
+                logMsg("Error crítico: " + error);
+                playButton.innerText = "ERROR - RECARGAR";
+                alert("Error al iniciar la experiencia: " + error);
+            }
         });
 
         // Lógica de detección básica
         const target1 = document.querySelector('#target-rector-1');
-        target1.addEventListener("targetFound", () => { video1.play(); });
-        target1.addEventListener("targetLost", () => { video1.pause(); });
+        target1.addEventListener("targetFound", () => { logMsg("Rector 1 Found"); video1.play(); });
+        target1.addEventListener("targetLost", () => { logMsg("Rector 1 Lost"); video1.pause(); });
 
         const target2 = document.querySelector('[mindar-image-target="targetIndex: 1"]');
-        target2.addEventListener("targetFound", () => { video2.play(); });
-        target2.addEventListener("targetLost", () => { video2.pause(); });
+        target2.addEventListener("targetFound", () => { logMsg("Rector 2 Found"); video2.play(); });
+        target2.addEventListener("targetLost", () => { logMsg("Rector 2 Lost"); video2.pause(); });
 
         // LÓGICA DE INTERACCIÓN (PANEL INFORMATIVO)
         function showInfo(type) {
